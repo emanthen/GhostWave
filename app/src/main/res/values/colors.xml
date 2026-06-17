@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- GhostWave brand palette — used by XML theme only.
+         Compose reads these from Color.kt instead. -->
+    <color name="navy_background">#0D0F1A</color>
+    <color name="electric_violet">#7C3AED</color>
+    <color name="violet_light">#A78BFA</color>
+    <color name="surface_dark">#12152A</color>
+    <color name="on_surface">#E8E8F0</color>
+</resources>

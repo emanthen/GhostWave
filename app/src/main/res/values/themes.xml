@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Base theme for the XML-layer (used before Compose takes over).
+        All real theming lives in Theme.kt (Compose Material 3).
+    -->
+    <style name="Theme.GhostWave" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Deep navy background — shown on cold-start before Compose renders -->
+        <item name="android:windowBackground">@color/navy_background</item>
+        <item name="android:statusBarColor">@color/navy_background</item>
+        <item name="android:navigationBarColor">@color/navy_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
+    <!-- Splash screen theme — transitions immediately into GhostWave dark UI -->
+    <style name="Theme.GhostWave.SplashScreen" parent="Theme.GhostWave">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
+</resources>

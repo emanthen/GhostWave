@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GhostWave</string>
+    <string name="app_tagline">Vanish into the signal.</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_create_identity">Create Your Identity</string>
+    <string name="onboarding_display_name_hint">Display name (visible to contacts only)</string>
+    <string name="onboarding_generating_keys">Generating identity keys…</string>
+    <string name="onboarding_your_gw_id">Your GhostWave ID</string>
+
+    <!-- Contacts -->
+    <string name="contacts_empty">No contacts yet.\nScan a QR code to add someone.</string>
+    <string name="contacts_add">Add Contact</string>
+    <string name="contacts_scan_qr">Scan QR Code</string>
+    <string name="contacts_enter_id">Enter GW-ID manually</string>
+
+    <!-- Chat -->
+    <string name="chat_message_hint">Message…</string>
+    <string name="chat_disappearing_off">Off</string>
+    <string name="chat_disappearing_1h">1 hour</string>
+    <string name="chat_disappearing_24h">24 hours</string>
+    <string name="chat_disappearing_7d">7 days</string>
+
+    <!-- Calls -->
+    <string name="call_connecting">Connecting…</string>
+    <string name="call_ringing">Ringing…</string>
+    <string name="call_in_progress">Call in progress</string>
+    <string name="call_ended">Call ended</string>
+
+    <!-- Settings -->
+    <string name="settings_profile">Profile</string>
+    <string name="settings_privacy">Privacy</string>
+    <string name="settings_security">Security</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_storage">Storage</string>
+    <string name="settings_network">Network</string>
+    <string name="settings_about">About</string>
+
+    <!-- Security -->
+    <string name="security_app_lock">App Lock</string>
+    <string name="security_biometric_prompt">Unlock GhostWave</string>
+    <string name="security_safety_numbers">Safety Numbers</string>
+    <string name="security_reregister_warning">This will permanently delete all your keys, messages, and contacts. This cannot be undone.</string>
+
+    <!-- Errors -->
+    <string name="error_key_generation">Failed to generate identity keys. Please try again.</string>
+    <string name="error_peer_not_found">Peer not reachable. Message queued for delivery.</string>
+    <string name="error_call_failed">Call failed: unable to establish secure connection.</string>
+    <string name="error_fingerprint_mismatch">⚠ Safety number changed! Verify contact identity before continuing.</string>
+</resources>

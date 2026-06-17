@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    GhostWave launcher icon: ghost silhouette composed of wave lines.
+    Navy background (#0D0F1A), electric violet (#7C3AED) wave strokes.
+    This is a placeholder vector — replace with final asset from designer.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Background -->
+    <path
+        android:fillColor="#0D0F1A"
+        android:pathData="M0,0 L108,0 L108,108 L0,108 Z" />
+
+    <!-- Ghost body outline (simplified) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#7C3AED"
+        android:strokeWidth="3"
+        android:pathData="
+            M54,18
+            C38,18 28,28 28,44
+            L28,76
+            L36,68 L44,76 L54,68 L64,76 L72,68 L80,76
+            L80,44
+            C80,28 70,18 54,18 Z" />
+
+    <!-- Wave lines through ghost (signal effect) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#7C3AED"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M36,44 Q42,40 48,44 Q54,48 60,44 Q66,40 72,44" />
+
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#A78BFA"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M36,52 Q42,48 48,52 Q54,56 60,52 Q66,48 72,52" />
+
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#7C3AED"
+        android:strokeWidth="1"
+        android:strokeLineCap="round"
+        android:pathData="M36,60 Q42,56 48,60 Q54,64 60,60 Q66,56 72,60" />
+
+    <!-- Eyes -->
+    <circle
+        android:fillColor="#7C3AED"
+        android:cx="46"
+        android:cy="38"
+        android:r="3" />
+    <circle
+        android:fillColor="#7C3AED"
+        android:cx="62"
+        android:cy="38"
+        android:r="3" />
+</vector>

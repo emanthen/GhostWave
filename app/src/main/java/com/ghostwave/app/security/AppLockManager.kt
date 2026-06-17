@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
+import androidx.activity.ComponentActivity
 import com.ghostwave.app.data.SettingsRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -65,7 +65,7 @@ class AppLockManager @Inject constructor(
      * Shows the system BiometricPrompt to unlock the app.
      * [activity] must be a FragmentActivity (e.g. MainActivity).
      */
-    fun promptBiometric(activity: FragmentActivity, onSuccess: () -> Unit, onFail: () -> Unit) {
+    fun promptBiometric(activity: ComponentActivity, onSuccess: () -> Unit, onFail: () -> Unit) {
         val biometricManager = BiometricManager.from(context)
         val canAuthenticate  = biometricManager.canAuthenticate(
             BiometricManager.Authenticators.BIOMETRIC_STRONG or

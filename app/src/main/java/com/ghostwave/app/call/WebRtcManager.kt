@@ -48,10 +48,15 @@ class WebRtcManager @Inject constructor(
     // Injected lazily to break the circular dep: DataChannelManager → WebRtcManager
     var dataChannelManager: DataChannelManager? = null
 
+    /** True after [initialize] has been called — guards double-init. */
+    var isInitialized: Boolean = false
+        private set
+
     private val _callState = MutableStateFlow<CallState>(CallState.Idle)
     val callState: StateFlow<CallState> = _callState.asStateFlow()
 
     fun initialize() {
+        if (isInitialized) return
         PeerConnectionFactory.initialize(
             PeerConnectionFactory.InitializationOptions.builder(context)
                 .setEnableInternalTracer(false)
@@ -61,6 +66,7 @@ class WebRtcManager @Inject constructor(
             .setVideoDecoderFactory(DefaultVideoDecoderFactory(EglBase.create().eglBaseContext))
             .setVideoEncoderFactory(DefaultVideoEncoderFactory(EglBase.create().eglBaseContext, true, true))
             .createPeerConnectionFactory()
+        isInitialized = true
     }
 
     // ── PeerConnection lifecycle ──────────────────────────────────────────

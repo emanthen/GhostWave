@@ -9,6 +9,9 @@ package com.ghostwave.app.navigation
  */
 sealed class Screen(val route: String) {
 
+    // ── Promo gate (mandatory first screen until unlocked) ────────────────
+    data object PromoCode : Screen("promo/gate")
+
     // ── Onboarding ────────────────────────────────────────────────────────
 
     /** First-launch: generate identity, pick display name */

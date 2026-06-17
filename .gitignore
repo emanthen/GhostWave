@@ -1,0 +1,37 @@
+# ── Build outputs ─────────────────────────────────────────────
+/build/
+/app/build/
+*.apk
+*.aab
+*.aar
+
+# ── Android Studio / IDEA ─────────────────────────────────────
+/.idea/
+*.iml
+.DS_Store
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# ── Gradle ─────────────────────────────────────────────────────
+/.gradle/
+/local.properties        # contains local SDK path — never commit
+gradle.properties.local
+
+# ── Secrets — NEVER commit these ──────────────────────────────
+google-services.json           # real Firebase project config
+*.keystore
+*.jks
+keystore.properties
+/app/keystore/
+
+# ── Room schema (optional: commit if you want migration tracking)
+/app/schemas/
+
+# ── Log / profiling output ─────────────────────────────────────
+*.hprof
+*.log
+
+# ── OS artefacts ───────────────────────────────────────────────
+Thumbs.db
+ehthumbs.db

@@ -13,43 +13,69 @@ android {
 
     defaultConfig {
         applicationId = "com.ghostwave.app"
-        minSdk = 26          // Android 8.0 — required for BiometricPrompt stable API + hardware keystore guarantees
+        minSdk = 26          // Android 8.0 — Keystore AES-GCM + BiometricPrompt stable
         targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Provide the SQLCipher passphrase derivation key alias as a build constant
-        // so it can be referenced from Kotlin without a hard-coded string literal.
-        buildConfigField("String", "KEYSTORE_KEY_ALIAS", "\"ghostwave_db_master_key\"")
-        buildConfigField("String", "SIGNAL_STORE_KEY_ALIAS", "\"ghostwave_signal_identity\"")
+        // Build constants — never put secrets here, only aliases
+        buildConfigField("String", "KEYSTORE_KEY_ALIAS",      "\"ghostwave_db_master_key\"")
+        buildConfigField("String", "SIGNAL_STORE_KEY_ALIAS",  "\"ghostwave_signal_identity\"")
+        buildConfigField("String", "PROMO_DEVICE_KEY_ALIAS",  "\"ghostwave_promo_device_key\"")
+        buildConfigField("String", "PROMO_API_BASE",          "\"https://api.ghostwave.app\"")
+    }
+
+    // ── Signing ────────────────────────────────────────────────────────
+    // Keys read from environment variables — NEVER hardcoded in source.
+    // Set in CI via GitHub Secrets; set locally via ~/.gradle/gradle.properties.
+    signingConfigs {
+        create("release") {
+            val storeFilePath = System.getenv("KEYSTORE_PATH")
+                ?: project.findProperty("KEYSTORE_PATH") as String?
+            val storePass    = System.getenv("KEYSTORE_PASSWORD")
+                ?: project.findProperty("KEYSTORE_PASSWORD") as String?
+            val keyAliasVal  = System.getenv("KEY_ALIAS")
+                ?: project.findProperty("KEY_ALIAS") as String?
+            val keyPass      = System.getenv("KEY_PASSWORD")
+                ?: project.findProperty("KEY_PASSWORD") as String?
+
+            if (storeFilePath != null && storePass != null && keyAliasVal != null && keyPass != null) {
+                storeFile     = file(storeFilePath)
+                storePassword = storePass
+                keyAlias      = keyAliasVal
+                keyPassword   = keyPass
+            }
+        }
     }
 
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
-            versionNameSuffix = "-debug"
-            isDebuggable = true
-            // Never enable cleartext in release — only in debug for local STUN/TURN testing
-            manifestPlaceholders["usesCleartextTraffic"] = "true"
+            versionNameSuffix   = "-debug"
+            isDebuggable        = true
+            // cleartext only in debug for local IPFS Kubo node (127.0.0.1)
+            // The network_security_config.xml controls it; manifest placeholder
+            // kept for legacy compatibility
+            manifestPlaceholders["usesCleartextTraffic"] = "false"
         }
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled    = true
+            isShrinkResources  = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
             manifestPlaceholders["usesCleartextTraffic"] = "false"
-            signingConfig = signingConfigs.getByName("debug") // replace with release keystore
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-        isCoreLibraryDesugaringEnabled = true // for java.time APIs on API 26+
+        sourceCompatibility          = JavaVersion.VERSION_17
+        targetCompatibility          = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true   // java.time on API 26+
     }
 
     kotlinOptions {
@@ -62,7 +88,7 @@ android {
     }
 
     buildFeatures {
-        compose = true
+        compose     = true
         buildConfig = true
     }
 
@@ -70,18 +96,24 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += "/META-INF/DEPENDENCIES"
-            // WebRTC and libsignal both ship native .so files; keep them all
             jniLibs.keepDebugSymbols += "**/*.so"
         }
     }
 
-    // Separate APKs per ABI to keep download size small; for dev just use universal
     splits {
         abi {
-            isEnable = true
+            isEnable     = true
             reset()
             include("arm64-v8a", "armeabi-v7a", "x86_64")
             isUniversalApk = true
+        }
+    }
+
+    // Schema export for Room migration tracking
+    kapt {
+        arguments {
+            arg("room.schemaLocation", "$projectDir/schemas")
+            arg("room.incremental",    "true")
         }
     }
 }
@@ -89,13 +121,13 @@ android {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
-    // Core AndroidX
+    // ── Core AndroidX ───────────────────────────────────────────────
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime)
     implementation(libs.androidx.lifecycle.viewmodel)
     implementation(libs.androidx.activity.compose)
 
-    // Compose BOM — keeps all Compose artifact versions in sync
+    // ── Compose BOM ─────────────────────────────────────────────────
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.graphics)
@@ -104,73 +136,74 @@ dependencies {
     implementation(libs.compose.material.icons)
     implementation(libs.compose.animation)
 
-    // Navigation
+    // ── Navigation ──────────────────────────────────────────────────
     implementation(libs.navigation.compose)
 
-    // Hilt DI
+    // ── Hilt DI ─────────────────────────────────────────────────────
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
-    // Room + SQLCipher (encrypted local DB)
+    // ── Room + SQLCipher ────────────────────────────────────────────
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     kapt(libs.room.compiler)
     implementation(libs.sqlcipher.android)
     implementation(libs.sqlite.ktx)
 
-    // DataStore (encrypted settings)
+    // ── DataStore ───────────────────────────────────────────────────
     implementation(libs.datastore.preferences)
 
-    // WorkManager (offline message delivery)
+    // ── EncryptedSharedPreferences (promo gate + settings) ──────────
+    implementation(libs.security.crypto)
+
+    // ── WorkManager ─────────────────────────────────────────────────
     implementation(libs.workmanager.ktx)
     implementation(libs.hilt.workmanager)
     kapt(libs.hilt.workmanager.compiler)
 
-    // Biometric lock
+    // ── Biometric lock ──────────────────────────────────────────────
     implementation(libs.biometric)
 
-    // Firebase — messaging ONLY (wakeup ping, no content)
+    // ── Firebase (push wakeup ping only) ────────────────────────────
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
     implementation(libs.kotlinx.coroutines.play.services)
 
-    // Signal Protocol — X3DH + Double Ratchet
+    // ── Signal Protocol — X3DH + Double Ratchet ─────────────────────
     implementation(libs.signal.libsignal.android)
 
-    // WebRTC — audio/video calls with DTLS-SRTP
+    // ── WebRTC — DTLS-SRTP calls ────────────────────────────────────
     implementation(libs.webrtc.android)
 
-    // IPFS Helia node — photo storage
-    implementation(libs.ipfs.kotlin)
-
-    // QR Code generation (Java) + scanning (C++ native)
+    // ── QR Code ─────────────────────────────────────────────────────
     implementation(libs.zxing.android)
     implementation(libs.zxing.core)
 
-    // CameraX (QR scanner, video calls)
+    // ── CameraX (QR scanner + video calls) ──────────────────────────
     implementation(libs.camerax.core)
     implementation(libs.camerax.camera2)
     implementation(libs.camerax.lifecycle)
     implementation(libs.camerax.view)
 
-    // JSON (reactions, settings serialisation)
-    implementation(libs.gson)
-
-    // HTTP (IPFS Kubo API)
+    // ── HTTP (IPFS Kubo RPC API) ─────────────────────────────────────
     implementation(libs.okhttp)
 
-    // Image loading (chat thumbnails)
+    // ── JSON (reactions, settings) ───────────────────────────────────
+    implementation(libs.gson)
+
+    // ── Image loading (chat thumbnails) ─────────────────────────────
     implementation(libs.coil.compose)
 
-    // Runtime permissions + system UI
+    // ── Runtime permissions + system UI ─────────────────────────────
     implementation(libs.accompanist.permissions)
     implementation(libs.accompanist.systemuicontroller)
 
-    // --- Testing ---
+    // ── Testing ─────────────────────────────────────────────────────
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
     androidTestImplementation(libs.junit.ext)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.mockk.android)

@@ -1,28 +1,40 @@
 package com.ghostwave.app
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.*
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.ghostwave.app.navigation.GhostWaveNavGraph
+import com.ghostwave.app.navigation.Screen
+import com.ghostwave.app.promo.PromoCodeGate
 import com.ghostwave.app.security.AppLockManager
-import com.ghostwave.app.ui.theme.*
+import com.ghostwave.app.ui.theme.ElectricViolet
+import com.ghostwave.app.ui.theme.GhostWaveTheme
+import com.ghostwave.app.ui.theme.NavyBackground
+import com.ghostwave.app.ui.theme.ghostColors
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -31,10 +43,21 @@ class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
 
     @Inject lateinit var appLockManager: AppLockManager
+    @Inject lateinit var promoCodeGate:  PromoCodeGate
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Prevent screenshots/screen recording on the promo entry screen.
+        // FLAG_SECURE is set globally; PromoCodeScreen is the only screen
+        // where a code is entered, so this is the correct scope.
+        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+
+        // If the gate is already passed on this device, boot WebRTC now.
+        if (!promoCodeGate.shouldShowGate()) {
+            (application as GhostWaveApplication).onPromoUnlocked()
+        }
 
         setContent {
             GhostWaveTheme {
@@ -52,9 +75,9 @@ class MainActivity : ComponentActivity() {
                         GhostWaveNavGraph(
                             navController    = navController,
                             startDestination = destination,
+                            onMinimizeApp    = { moveTaskToBack(true) },
                         )
 
-                        // App lock overlay
                         if (isLocked) {
                             AppLockOverlay(onUnlock = {
                                 appLockManager.promptBiometric(
@@ -73,6 +96,13 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         appLockManager.onAppForegrounded()
+
+        // Re-check integrity on every resume — detects storage tampering
+        // while app was backgrounded
+        if (!promoCodeGate.checkIntegrity() && !promoCodeGate.shouldShowGate()) {
+            // Integrity failed — recreate so NavGraph picks up new startDestination
+            recreate()
+        }
     }
 
     override fun onPause() {
@@ -81,10 +111,16 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// ── MainViewModel must provide promo-aware startDestination ──────────────────
+
+// MainViewModel.kt reads promoCodeGate.shouldShowGate() to determine
+// whether to start at Screen.PromoCode or Screen.IdentitySetup / ContactList.
+// See MainViewModel.kt below.
+
 @Composable
 private fun AppLockOverlay(onUnlock: () -> Unit) {
     Box(
-        modifier = Modifier
+        modifier         = Modifier
             .fillMaxSize()
             .background(NavyBackground),
         contentAlignment = Alignment.Center,
@@ -104,13 +140,11 @@ private fun AppLockOverlay(onUnlock: () -> Unit) {
                 color = MaterialTheme.ghostColors.placeholder,
             )
             Spacer(Modifier.height(32.dp))
-            androidx.compose.material3.Button(
+            Button(
                 onClick = onUnlock,
-                colors  = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = ElectricViolet,
-                ),
+                colors  = ButtonDefaults.buttonColors(containerColor = ElectricViolet),
             ) {
-                Text("Unlock", color = androidx.compose.ui.graphics.Color.White)
+                Text("Unlock", color = Color.White)
             }
         }
     }

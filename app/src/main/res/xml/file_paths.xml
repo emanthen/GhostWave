@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FileProvider paths for GhostWave.
+  Used when sharing encrypted media attachments via Intent.
+  All paths are app-private; nothing is exposed to external apps
+  without an explicit URI grant.
+-->
+<paths>
+    <!-- Temporary files created during photo/video processing -->
+    <cache-path
+        name="ghostwave_cache"
+        path="." />
+
+    <!-- Decrypted media staged for sending via IPFS -->
+    <files-path
+        name="ghostwave_files"
+        path="media/" />
+
+    <!-- External cache (used for sharing received media externally) -->
+    <external-cache-path
+        name="ghostwave_external_cache"
+        path="." />
+</paths>

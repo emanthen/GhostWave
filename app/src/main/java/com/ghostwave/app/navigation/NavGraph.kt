@@ -22,6 +22,7 @@ import com.ghostwave.app.ui.contacts.AddContactScreen
 import com.ghostwave.app.ui.contacts.ContactListScreen
 import com.ghostwave.app.ui.onboarding.IdentitySetupScreen
 import com.ghostwave.app.ui.onboarding.QrShareScreen
+import com.ghostwave.app.ui.promo.PromoCodeScreen
 import com.ghostwave.app.ui.settings.AboutScreen
 import com.ghostwave.app.ui.settings.NotificationSettingsScreen
 import com.ghostwave.app.ui.settings.PrivacySettingsScreen
@@ -32,49 +33,50 @@ import com.ghostwave.app.ui.settings.SettingsScreen
 private const val ANIM_DURATION = 280
 
 private val slideEnter: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-    slideInHorizontally(
-        initialOffsetX = { it },
-        animationSpec  = tween(ANIM_DURATION),
-    ) + fadeIn(animationSpec = tween(ANIM_DURATION))
+    slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(ANIM_DURATION)) +
+        fadeIn(animationSpec = tween(ANIM_DURATION))
 }
-
 private val slideExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
-    slideOutHorizontally(
-        targetOffsetX = { -it / 3 },
-        animationSpec = tween(ANIM_DURATION),
-    ) + fadeOut(animationSpec = tween(ANIM_DURATION))
+    slideOutHorizontally(targetOffsetX = { -it / 3 }, animationSpec = tween(ANIM_DURATION)) +
+        fadeOut(animationSpec = tween(ANIM_DURATION))
 }
-
 private val slidePopEnter: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-    slideInHorizontally(
-        initialOffsetX = { -it / 3 },
-        animationSpec  = tween(ANIM_DURATION),
-    ) + fadeIn(animationSpec = tween(ANIM_DURATION))
+    slideInHorizontally(initialOffsetX = { -it / 3 }, animationSpec = tween(ANIM_DURATION)) +
+        fadeIn(animationSpec = tween(ANIM_DURATION))
 }
-
 private val slidePopExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
-    slideOutHorizontally(
-        targetOffsetX = { it },
-        animationSpec = tween(ANIM_DURATION),
-    ) + fadeOut(animationSpec = tween(ANIM_DURATION))
+    slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(ANIM_DURATION)) +
+        fadeOut(animationSpec = tween(ANIM_DURATION))
 }
 
 @Composable
 fun GhostWaveNavGraph(
     navController:    NavHostController,
     startDestination: String,
+    onMinimizeApp:    () -> Unit,
 ) {
     NavHost(
-        navController       = navController,
-        startDestination    = startDestination,
-        enterTransition     = slideEnter,
-        exitTransition      = slideExit,
-        popEnterTransition  = slidePopEnter,
-        popExitTransition   = slidePopExit,
+        navController      = navController,
+        startDestination   = startDestination,
+        enterTransition    = slideEnter,
+        exitTransition     = slideExit,
+        popEnterTransition = slidePopEnter,
+        popExitTransition  = slidePopExit,
     ) {
 
-        // ── Onboarding ────────────────────────────────────────────────────
+        // ── Promo gate — mandatory; back press minimizes app ──────────────
+        composable(Screen.PromoCode.route) {
+            PromoCodeScreen(
+                onUnlocked = {
+                    navController.navigate(Screen.IdentitySetup.route) {
+                        popUpTo(Screen.PromoCode.route) { inclusive = true }
+                    }
+                },
+                onMinimize = onMinimizeApp,
+            )
+        }
 
+        // ── Onboarding ────────────────────────────────────────────────────
         composable(Screen.IdentitySetup.route) {
             IdentitySetupScreen(
                 onIdentityCreated = {
@@ -96,14 +98,11 @@ fun GhostWaveNavGraph(
         }
 
         // ── Contacts ──────────────────────────────────────────────────────
-
         composable(Screen.ContactList.route) {
             ContactListScreen(
-                onContactClick   = { contactId ->
-                    navController.navigate(Screen.Chat.buildRoute(contactId))
-                },
-                onAddContact     = { navController.navigate(Screen.AddContact.route) },
-                onSettingsClick  = { navController.navigate(Screen.Settings.route) },
+                onContactClick  = { navController.navigate(Screen.Chat.buildRoute(it)) },
+                onAddContact    = { navController.navigate(Screen.AddContact.route) },
+                onSettingsClick = { navController.navigate(Screen.Settings.route) },
             )
         }
 
@@ -115,7 +114,6 @@ fun GhostWaveNavGraph(
         }
 
         // ── Chat ──────────────────────────────────────────────────────────
-
         composable(
             route     = Screen.Chat.route,
             arguments = listOf(navArgument(Screen.Chat.ARG_CONTACT_ID) { type = NavType.StringType }),
@@ -130,7 +128,6 @@ fun GhostWaveNavGraph(
         }
 
         // ── Calls ─────────────────────────────────────────────────────────
-
         composable(
             route     = Screen.AudioCall.route,
             arguments = listOf(
@@ -164,7 +161,6 @@ fun GhostWaveNavGraph(
         }
 
         // ── Settings ──────────────────────────────────────────────────────
-
         composable(Screen.Settings.route) {
             SettingsScreen(
                 onBack     = { navController.popBackStack() },
@@ -188,15 +184,16 @@ fun GhostWaveNavGraph(
             AboutScreen(onBack = { navController.popBackStack() })
         }
 
-        // Remaining settings sub-screens (profile, storage, network)
         composable(Screen.SettingsProfile.route) {
-            PlaceholderScreen("Profile Settings — Step 16")
+            PlaceholderScreen("Profile Settings")
         }
+
         composable(Screen.SettingsStorage.route) {
-            PlaceholderScreen("Storage Settings — Step 16")
+            PlaceholderScreen("Storage Settings")
         }
+
         composable(Screen.SettingsNetwork.route) {
-            PlaceholderScreen("Network Settings — Step 16")
+            PlaceholderScreen("Network Settings")
         }
 
         composable(

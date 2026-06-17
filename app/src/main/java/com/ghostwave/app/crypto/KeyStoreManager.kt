@@ -2,14 +2,20 @@ package com.ghostwave.app.crypto
 
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
+import android.util.Log
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
+import javax.crypto.Mac
 import javax.crypto.SecretKey
+import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.GCMParameterSpec
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private const val TAG = "KeyStoreManager"
 
 private const val ANDROID_KEYSTORE  = "AndroidKeyStore"
 private const val AES_GCM_NO_PAD   = "AES/GCM/NoPadding"
@@ -102,6 +108,69 @@ class KeyStoreManager @Inject constructor() {
         val spec   = GCMParameterSpec(GCM_TAG_BITS, blob.iv)
         cipher.init(Cipher.DECRYPT_MODE, getOrCreateAesKey(alias), spec)
         return cipher.doFinal(blob.ciphertext)
+    }
+
+    // ── HMAC-SHA256 (promo integrity token) ──────────────────────────────────
+
+    /**
+     * Returns an HMAC-SHA256 key at [alias], creating it on first use.
+     * Used exclusively for the promo code integrity token.
+     */
+    fun getOrCreateHmacKey(alias: String): SecretKey {
+        if (!keyStore.containsAlias(alias)) {
+            val spec = KeyGenParameterSpec.Builder(
+                alias,
+                KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY,
+            )
+                .setDigests(KeyProperties.DIGEST_SHA256)
+                .setUserAuthenticationRequired(false)
+                .build()
+            KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_HMAC_SHA256, ANDROID_KEYSTORE)
+                .also { it.init(spec) }
+                .generateKey()
+        }
+        return (keyStore.getEntry(alias, null) as KeyStore.SecretKeyEntry).secretKey
+    }
+
+    /**
+     * Computes HMAC-SHA256([data]) with the Keystore key at [alias].
+     * Returns lowercase hex. Key material never leaves the Keystore.
+     */
+    fun hmacSha256(alias: String, data: String): String {
+        val mac = Mac.getInstance("HmacSHA256")
+        mac.init(getOrCreateHmacKey(alias))
+        return mac.doFinal(data.toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
+    }
+
+    /**
+     * Constant-time HMAC verification to prevent timing side-channels.
+     */
+    fun verifyHmac(alias: String, data: String, expectedHex: String): Boolean {
+        val actual   = hmacSha256(alias, data)
+        val expected = expectedHex.lowercase()
+        if (actual.length != expected.length) return false
+        var diff = 0
+        for (i in actual.indices) diff = diff or (actual[i].code xor expected[i].code)
+        return diff == 0
+    }
+
+    // ── Hardware attestation ──────────────────────────────────────────────────
+
+    /**
+     * Returns true if the key at [alias] resides in hardware (TEE or StrongBox).
+     * Shown in Settings > Security > Encryption status card.
+     */
+    fun isHardwareBacked(alias: String): Boolean {
+        val key = keyStore.getKey(alias, null) as? SecretKey ?: return false
+        return try {
+            val factory = SecretKeyFactory.getInstance(key.algorithm, ANDROID_KEYSTORE)
+            val info    = factory.getKeySpec(key, KeyInfo::class.java) as KeyInfo
+            info.isInsideSecureHardware
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not determine hardware backing for $alias", e)
+            false
+        }
     }
 
     // ── Key lifecycle ────────────────────────────────────────────────────────

@@ -97,10 +97,10 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         appLockManager.onAppForegrounded()
 
-        // Re-check integrity on every resume — detects storage tampering
-        // while app was backgrounded
-        if (!promoCodeGate.checkIntegrity() && !promoCodeGate.shouldShowGate()) {
-            // Integrity failed — recreate so NavGraph picks up new startDestination
+        // Re-check integrity every resume — detects storage tampering while backgrounded.
+        // checkIntegrity() clears unlock state on failure, so recreate() causes
+        // MainViewModel to route back to the promo gate screen.
+        if (!promoCodeGate.checkIntegrity()) {
             recreate()
         }
     }

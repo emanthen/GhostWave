@@ -19,7 +19,8 @@ import org.signal.libsignal.protocol.state.PreKeyRecord
 import org.signal.libsignal.protocol.state.PreKeyStore
 import org.signal.libsignal.protocol.state.SessionRecord
 import org.signal.libsignal.protocol.state.SessionStore
-import org.signal.libsignal.protocol.state.SenderKeyRecord
+import org.signal.libsignal.protocol.groups.state.SenderKeyRecord
+import org.signal.libsignal.protocol.state.KyberPreKeyRecord
 import org.signal.libsignal.protocol.state.SignalProtocolStore
 import org.signal.libsignal.protocol.state.SignedPreKeyRecord
 import org.signal.libsignal.protocol.state.SignedPreKeyStore
@@ -254,6 +255,16 @@ class GhostWaveSignalProtocolStore @Inject constructor(
         sender:         SignalProtocolAddress,
         distributionId: UUID,
     ): SenderKeyRecord? = null
+
+    // ── KyberPreKeyStore (post-quantum — not used in GhostWave P2P) ────────
+
+    override fun loadKyberPreKey(kyberPreKeyId: Int): KyberPreKeyRecord? = null
+
+    override fun storeKyberPreKey(kyberPreKeyId: Int, record: KyberPreKeyRecord) {}
+
+    override fun containsKyberPreKey(kyberPreKeyId: Int): Boolean = false
+
+    override fun markKyberPreKeyUsed(kyberPreKeyId: Int) {}
 
     // ── Helpers ────────────────────────────────────────────────────────────
 

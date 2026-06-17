@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
+import androidx.security.crypto.MasterKeys
 import com.ghostwave.app.BuildConfig
 import com.ghostwave.app.crypto.KeyStoreManager
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -59,13 +59,11 @@ class PromoCodeRepository private constructor(
         ): PromoCodeRepository = PromoCodeRepository(prefs, keyStoreManager)
 
         private fun buildEncryptedPrefs(context: Context): SharedPreferences {
-            val masterKey = MasterKey.Builder(context)
-                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                .build()
+            val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
             return EncryptedSharedPreferences.create(
-                context,
                 PREFS_FILE,
-                masterKey,
+                masterKeyAlias,
+                context,
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
             )

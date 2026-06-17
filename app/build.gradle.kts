@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.google.services)
@@ -82,7 +81,6 @@ android {
         jvmTarget = "17"
         freeCompilerArgs += listOf(
             "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            "-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
             "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
         )
     }
@@ -90,6 +88,11 @@ android {
     buildFeatures {
         compose     = true
         buildConfig = true
+    }
+
+    composeOptions {
+        // kotlin.plugin.compose only exists in Kotlin 2.0+; use composeOptions for 1.9.x
+        kotlinCompilerExtensionVersion = "1.5.12"
     }
 
     packaging {

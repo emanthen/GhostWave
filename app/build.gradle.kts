@@ -112,12 +112,14 @@ android {
         }
     }
 
-    // Schema export for Room migration tracking
-    kapt {
-        arguments {
-            arg("room.schemaLocation", "$projectDir/schemas")
-            arg("room.incremental",    "true")
-        }
+}
+
+// kapt must be at the top level, not inside android {}
+// Room needs room.schemaLocation to export the schema JSON (exportSchema = true)
+kapt {
+    arguments {
+        arg("room.schemaLocation", "$projectDir/schemas")
+        arg("room.incremental",    "true")
     }
 }
 

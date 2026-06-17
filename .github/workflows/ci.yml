@@ -37,6 +37,28 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
+      - name: Write placeholder google-services.json
+        run: |
+          cat > app/google-services.json << 'EOF'
+          {
+            "project_info": {
+              "project_number": "000000000000",
+              "project_id": "ghostwave-placeholder",
+              "storage_bucket": "ghostwave-placeholder.appspot.com"
+            },
+            "client": [{
+              "client_info": {
+                "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+                "android_client_info": { "package_name": "com.ghostwave.app" }
+              },
+              "oauth_client": [],
+              "api_key": [{ "current_key": "placeholder_api_key" }],
+              "services": { "appinvite_service": { "other_platform_oauth_client": [] } }
+            }],
+            "configuration_version": "1"
+          }
+          EOF
+
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest --no-daemon --stacktrace
         env:
@@ -88,6 +110,28 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
+      - name: Write placeholder google-services.json
+        run: |
+          cat > app/google-services.json << 'EOF'
+          {
+            "project_info": {
+              "project_number": "000000000000",
+              "project_id": "ghostwave-placeholder",
+              "storage_bucket": "ghostwave-placeholder.appspot.com"
+            },
+            "client": [{
+              "client_info": {
+                "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+                "android_client_info": { "package_name": "com.ghostwave.app" }
+              },
+              "oauth_client": [],
+              "api_key": [{ "current_key": "placeholder_api_key" }],
+              "services": { "appinvite_service": { "other_platform_oauth_client": [] } }
+            }],
+            "configuration_version": "1"
+          }
+          EOF
+
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace
         env:
@@ -134,6 +178,28 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
+      - name: Write placeholder google-services.json
+        run: |
+          cat > app/google-services.json << 'EOF'
+          {
+            "project_info": {
+              "project_number": "000000000000",
+              "project_id": "ghostwave-placeholder",
+              "storage_bucket": "ghostwave-placeholder.appspot.com"
+            },
+            "client": [{
+              "client_info": {
+                "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+                "android_client_info": { "package_name": "com.ghostwave.app" }
+              },
+              "oauth_client": [],
+              "api_key": [{ "current_key": "placeholder_api_key" }],
+              "services": { "appinvite_service": { "other_platform_oauth_client": [] } }
+            }],
+            "configuration_version": "1"
+          }
+          EOF
+
       - name: Build release APK
         run: ./gradlew assembleRelease --no-daemon --stacktrace
         env:
@@ -179,6 +245,28 @@ jobs:
 
       - name: Make gradlew executable
         run: chmod +x gradlew
+
+      - name: Write placeholder google-services.json
+        run: |
+          cat > app/google-services.json << 'EOF'
+          {
+            "project_info": {
+              "project_number": "000000000000",
+              "project_id": "ghostwave-placeholder",
+              "storage_bucket": "ghostwave-placeholder.appspot.com"
+            },
+            "client": [{
+              "client_info": {
+                "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+                "android_client_info": { "package_name": "com.ghostwave.app" }
+              },
+              "oauth_client": [],
+              "api_key": [{ "current_key": "placeholder_api_key" }],
+              "services": { "appinvite_service": { "other_platform_oauth_client": [] } }
+            }],
+            "configuration_version": "1"
+          }
+          EOF
 
       - name: Enable KVM group perms
         run: |

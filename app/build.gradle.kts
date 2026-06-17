@@ -162,6 +162,10 @@ dependencies {
     // ── EncryptedSharedPreferences (promo gate + settings) ──────────
     implementation(libs.security.crypto)
 
+    // ── Material3 + AppCompat (Theme.Material3.Dark.NoActionBar in XML) ─
+    implementation(libs.material)
+    implementation(libs.appcompat)
+
     // ── WorkManager ─────────────────────────────────────────────────
     implementation(libs.workmanager.ktx)
     implementation(libs.hilt.workmanager)

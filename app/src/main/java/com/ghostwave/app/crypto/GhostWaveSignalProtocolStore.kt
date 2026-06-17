@@ -19,6 +19,7 @@ import org.signal.libsignal.protocol.state.PreKeyRecord
 import org.signal.libsignal.protocol.state.PreKeyStore
 import org.signal.libsignal.protocol.state.SessionRecord
 import org.signal.libsignal.protocol.state.SessionStore
+import org.signal.libsignal.protocol.state.SignalProtocolStore
 import org.signal.libsignal.protocol.state.SignedPreKeyRecord
 import org.signal.libsignal.protocol.state.SignedPreKeyStore
 import javax.inject.Inject
@@ -57,7 +58,7 @@ class GhostWaveSignalProtocolStore @Inject constructor(
     private val preKeyDao:           SignalPreKeyDao,
     private val signedPreKeyDao:     SignalSignedPreKeyDao,
     private val identityKeyDao:      SignalIdentityKeyDao,
-) : IdentityKeyStore, PreKeyStore, SessionStore, SignedPreKeyStore {
+) : SignalProtocolStore {
 
     // ── In-memory cache for local identity (hot path — used on every message) ──
     @Volatile private var cachedIdentityKeyPair: IdentityKeyPair? = null
@@ -200,6 +201,12 @@ class GhostWaveSignalProtocolStore @Inject constructor(
     override fun deleteAllSessions(name: String) {
         sessionDao.deleteAllSessionsForGwId(name)
     }
+
+    override fun loadExistingSessions(addresses: List<SignalProtocolAddress>): List<SessionRecord> =
+        addresses.mapNotNull { address ->
+            sessionDao.loadSession(address.toCompositeId())
+                ?.let { SessionRecord(it.serializedRecord) }
+        }
 
     // ── SignedPreKeyStore ──────────────────────────────────────────────────
 

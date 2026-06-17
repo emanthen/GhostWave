@@ -44,7 +44,7 @@ class QrShareViewModel @Inject constructor(
             val bitmap = withContext(Dispatchers.Default) {
                 runCatching {
                     val payload = QrCodeUtil.encodeContactPayload(gwId, name, pubKeyB64)
-                    QrCodeUtil.generateQrBitmap(payload, size = 512)
+                    QrCodeUtil.generateQrBitmap(payload, sizePx = 512)
                 }.getOrNull()
             }
 

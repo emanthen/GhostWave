@@ -74,7 +74,7 @@ fun QrShareScreen(
                 }
                 uiState.qrBitmap != null -> {
                     Image(
-                        bitmap      = uiState.qrBitmap.asImageBitmap(),
+                        bitmap      = uiState.qrBitmap!!.asImageBitmap(),
                         contentDescription = "QR code for ${uiState.ghostWaveId}",
                         modifier    = Modifier
                             .size(220.dp)

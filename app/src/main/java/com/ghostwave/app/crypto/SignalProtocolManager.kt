@@ -3,6 +3,7 @@ package com.ghostwave.app.crypto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.signal.libsignal.protocol.IdentityKeyPair
+import org.signal.libsignal.protocol.ecc.Curve
 import org.signal.libsignal.protocol.state.PreKeyRecord
 import org.signal.libsignal.protocol.state.SignedPreKeyRecord
 import org.signal.libsignal.protocol.util.KeyHelper
@@ -57,7 +58,7 @@ class SignalProtocolManager @Inject constructor() {
      */
     suspend fun generateIdentityKeyPair(): IdentityKeyPair =
         withContext(Dispatchers.Default) {
-            KeyHelper.generateIdentityKeyPair()
+            IdentityKeyPair.generate()
         }
 
     /**
@@ -82,7 +83,9 @@ class SignalProtocolManager @Inject constructor() {
         count:   Int = PREKEY_BATCH_SIZE,
     ): List<PreKeyRecord> =
         withContext(Dispatchers.Default) {
-            KeyHelper.generatePreKeys(startId, count)
+            (startId until startId + count).map { id ->
+                PreKeyRecord(id, Curve.generateKeyPair())
+            }
         }
 
     /**
@@ -103,11 +106,12 @@ class SignalProtocolManager @Inject constructor() {
         id:              Int,
     ): SignedPreKeyRecord =
         withContext(Dispatchers.Default) {
-            KeyHelper.generateSignedPreKey(
-                identityKeyPair,
-                id,
-                System.currentTimeMillis(),
+            val keyPair   = Curve.generateKeyPair()
+            val signature = Curve.calculateSignature(
+                identityKeyPair.privateKey,
+                keyPair.publicKey.serialize(),
             )
+            SignedPreKeyRecord(id, System.currentTimeMillis(), keyPair, signature)
         }
 
     /**

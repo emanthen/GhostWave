@@ -89,9 +89,7 @@ class WebRtcManager @Inject constructor(
             listOf(PeerConnection.IceServer.builder(STUN_URL).createIceServer())
         ).apply {
             sdpSemantics          = PeerConnection.SdpSemantics.UNIFIED_PLAN
-            // DTLS-SRTP is mandatory — non-DTLS connections are rejected
-            dtlsSrtpKeyAgreement  = true
-            enableDtlsSrtp        = true
+            // DTLS-SRTP is the WebRTC default and only mode; no field needed to enforce it
             continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY
         }
 

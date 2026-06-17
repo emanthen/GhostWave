@@ -19,9 +19,11 @@ import org.signal.libsignal.protocol.state.PreKeyRecord
 import org.signal.libsignal.protocol.state.PreKeyStore
 import org.signal.libsignal.protocol.state.SessionRecord
 import org.signal.libsignal.protocol.state.SessionStore
+import org.signal.libsignal.protocol.state.SenderKeyRecord
 import org.signal.libsignal.protocol.state.SignalProtocolStore
 import org.signal.libsignal.protocol.state.SignedPreKeyRecord
 import org.signal.libsignal.protocol.state.SignedPreKeyStore
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -237,6 +239,21 @@ class GhostWaveSignalProtocolStore @Inject constructor(
     override fun removeSignedPreKey(signedPreKeyId: Int) {
         signedPreKeyDao.removeSignedPreKey(signedPreKeyId)
     }
+
+    // ── SenderKeyStore (group messaging — not used in GhostWave P2P) ──────
+
+    override fun storeSenderKey(
+        sender:         SignalProtocolAddress,
+        distributionId: UUID,
+        record:         SenderKeyRecord,
+    ) {
+        // GhostWave is P2P-only; group sender keys are never used
+    }
+
+    override fun loadSenderKey(
+        sender:         SignalProtocolAddress,
+        distributionId: UUID,
+    ): SenderKeyRecord? = null
 
     // ── Helpers ────────────────────────────────────────────────────────────
 

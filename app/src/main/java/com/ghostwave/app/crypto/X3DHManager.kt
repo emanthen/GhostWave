@@ -152,7 +152,7 @@ data class LocalPrekeyBundle(
 // Extension: load all prekeys (needed for bundle building)
 private fun SignalPreKeyDao.loadAllPreKeys(): List<SignalPreKey> {
     return try {
-        val max = runCatching { kotlinx.coroutines.runBlocking { getMaxPreKeyId() } }.getOrDefault(0)
+        val max: Int = runCatching { kotlinx.coroutines.runBlocking { getMaxPreKeyId() } }.getOrNull() ?: 0
         if (max <= 0) return emptyList()
         (1..max).mapNotNull { loadPreKey(it) }
     } catch (_: Exception) { emptyList() }

@@ -130,6 +130,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime)
     implementation(libs.androidx.lifecycle.viewmodel)
+    implementation(libs.androidx.lifecycle.compose)
     implementation(libs.androidx.activity.compose)
 
     // ── Compose BOM ─────────────────────────────────────────────────

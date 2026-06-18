@@ -145,7 +145,11 @@ class PromoSecurityTest {
     }
 }
 
-// Extension to allow == comparison for window flags in unit tests
+// Extension to allow == comparison for window flags and Long values in unit tests
 private fun assertEquals(expected: Int, actual: Int) {
+    if (expected != actual) throw AssertionError("Expected $expected but was $actual")
+}
+
+private fun assertEquals(expected: Long, actual: Long) {
     if (expected != actual) throw AssertionError("Expected $expected but was $actual")
 }

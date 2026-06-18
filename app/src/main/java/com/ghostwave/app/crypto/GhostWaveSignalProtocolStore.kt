@@ -258,7 +258,11 @@ class GhostWaveSignalProtocolStore @Inject constructor(
 
     // ── KyberPreKeyStore (post-quantum — not used in GhostWave P2P) ────────
 
-    override fun loadKyberPreKey(kyberPreKeyId: Int): KyberPreKeyRecord? = null
+    @Throws(InvalidKeyIdException::class)
+    override fun loadKyberPreKey(kyberPreKeyId: Int): KyberPreKeyRecord =
+        throw InvalidKeyIdException("KyberPreKey $kyberPreKeyId not found (post-quantum not used)")
+
+    override fun loadKyberPreKeys(): List<KyberPreKeyRecord> = emptyList()
 
     override fun storeKyberPreKey(kyberPreKeyId: Int, record: KyberPreKeyRecord) {}
 

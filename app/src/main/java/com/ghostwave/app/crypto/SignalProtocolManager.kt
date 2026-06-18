@@ -6,7 +6,7 @@ import org.signal.libsignal.protocol.IdentityKeyPair
 import org.signal.libsignal.protocol.ecc.Curve
 import org.signal.libsignal.protocol.state.PreKeyRecord
 import org.signal.libsignal.protocol.state.SignedPreKeyRecord
-import org.signal.libsignal.protocol.util.KeyHelper
+import java.security.SecureRandom
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -67,7 +67,7 @@ class SignalProtocolManager @Inject constructor() {
      */
     suspend fun generateRegistrationId(): Int =
         withContext(Dispatchers.Default) {
-            KeyHelper.generateRegistrationId(false)
+            SecureRandom().nextInt(16380) + 1
         }
 
     /**
